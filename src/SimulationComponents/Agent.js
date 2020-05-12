@@ -1,10 +1,11 @@
 import { Set, Map, hash, List } from "immutable";
 
 class Agent {
-  constructor(id, factSet) {
+  constructor(id, factSet, isPlayer = false) {
     this.id = id;
     this.facts = Set(factSet);
     this.uniqueKeyCount = 0;
+    this.isPlayer = isPlayer;
   }
 
   learn(fact) {
@@ -39,10 +40,11 @@ class Agent {
     }
   }
 
-  clone(network) {
+  clone() {
     return new Agent(
       this.id,
-      this.facts.map((f) => f.clone())
+      this.facts.map((f) => f.clone()),
+      this.isPlayer
     );
   }
 }

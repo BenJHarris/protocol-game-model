@@ -16,9 +16,7 @@ class Message {
   toString() {
     switch (this.status) {
       default:
-        return `${this.from} -> ${this.to}, ${this.fact.toString()} - ${
-          this.status
-        }`;
+        return `${this.from}->${this.to}, ${this.fact.toString()}`;
     }
   }
 }

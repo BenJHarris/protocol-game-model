@@ -1,20 +1,31 @@
 import { Set, Map, hash, List } from "immutable";
 
 class Simulation {
-  constructor(network) {
+  constructor(
+    network,
+    options = {
+      newSessionCommand: "",
+      responses: [],
+    }
+  ) {
     this.network = network;
-    this.networkSnapshots = List();
+    this.networkSnapshots = [];
+    this.networkSnapshots.push(network.clone());
     this.currentSnapshot = 0;
   }
 
   setSnapshot(snapNum) {
-    this.network = this.networkSnapshots.get(snapNum);
+    if (snapNum >= 0 && snapNum < this.networkSnapshots.length) {
+      this.network = this.networkSnapshots[snapNum];
+      this.currentSnapshot = snapNum;
+    }
   }
 
   parseCommandString(commandString) {
     return commandString
       .trim()
       .split(";")
+      .filter((s) => s.length > 0)
       .map((s) => s.trim());
   }
 
@@ -22,7 +33,7 @@ class Simulation {
     const openBrace = command.indexOf("(");
     const closeBrace = command.indexOf(")");
 
-    if (!openBrace || !closeBrace) {
+    if (openBrace === -1 || closeBrace === -1) {
       throw new Error(`Invalid Command ${command}`);
     }
 
@@ -30,30 +41,32 @@ class Simulation {
     const cArg = command.slice(openBrace + 1, closeBrace);
 
     let matched = true;
-
-    this.networkSnapshots.push(this.network.clone());
     this.network.step++;
+
+    let res = false;
 
     switch (cName) {
       case "transmit":
-        this.network.transmit(cArg);
+        res = this.network.transmit(cArg);
         break;
       case "block":
-        this.network.block(cArg);
+        res = this.network.block(cArg);
         break;
       case "inject":
-        this.network.inject(cArg);
+        res = this.network.inject(cArg);
         break;
       case "new_session":
-        this.network.newSession();
+        res = this.network.newSession();
         break;
       default:
         matched = false;
     }
 
-    if (!matched) {
-      this.networkSnapshots.pop;
+    if (!matched || !res) {
       this.network.step--;
+    } else {
+      this.networkSnapshots.push(this.network.clone());
+      this.currentSnapshot++;
     }
   }
 }

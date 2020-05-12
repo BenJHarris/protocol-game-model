@@ -6,10 +6,9 @@ import { Fact } from "./Fact";
 class Network {
   constructor() {
     this.agents = Map();
-    this.stack = List();
+    this.stack = [];
     this.session = 0;
     this.step = 0;
-    this.playerAgent = "E";
   }
 
   addAgent(agent) {
@@ -21,15 +20,21 @@ class Network {
   }
 
   transmit(id) {
-    const message = this.stack.get(id);
+    const message = this.stack[id];
+
+    if (message.status === "transmitted") {
+      return false;
+    }
+
     this.agents.get(message.to).learn(message.fact);
     message.status = "transmitted";
     message.step = this.step;
+    return true;
   }
 
   block(id) {
     console.log(`Run block on ${id}`);
-    const message = this.stack.get(id);
+    const message = this.stack[id];
     message.status = "blocked";
     message.step = this.step;
   }
@@ -63,7 +68,7 @@ class Network {
 
   receiveMessage(message) {
     message.status = "waiting";
-    this.stack = this.stack.push(message);
+    stack.push(message);
   }
 
   transmitMessage(message) {
@@ -72,15 +77,13 @@ class Network {
   }
 
   createMessage(from, to, fact, status = "waiting") {
-    this.stack = this.stack.push(
-      new Message(from, to, fact, status, this.step)
-    );
+    this.stack.push(new Message(from, to, fact, status, this.step));
   }
 
   clone() {
     let cNetwork = new Network();
-    cNetwork.agents = this.agents.map((a) => a.clone(this));
-    cNetwork.stack = List(this.stack);
+    this.agents.map((a) => a.clone()).forEach((a) => cNetwork.addAgent(a));
+    cNetwork.stack = this.stack.map((m) => m.clone());
     return cNetwork;
   }
 }
