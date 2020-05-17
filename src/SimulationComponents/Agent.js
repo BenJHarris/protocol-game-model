@@ -9,6 +9,7 @@ class Agent {
   }
 
   learn(fact) {
+    fact.step = this.network.step;
     this.facts = this.facts.add(fact);
   }
 

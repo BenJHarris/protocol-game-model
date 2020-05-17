@@ -1,4 +1,5 @@
 import { Set, Map, hash, List } from "immutable";
+import { Fact } from "./Fact";
 
 class Simulation {
   constructor(
@@ -12,6 +13,7 @@ class Simulation {
     this.networkSnapshots = [];
     this.networkSnapshots.push(network.clone());
     this.currentSnapshot = 0;
+    this.newSessionCommand = options.newSessionCommand;
   }
 
   setSnapshot(snapNum) {
@@ -29,7 +31,29 @@ class Simulation {
       .map((s) => s.trim());
   }
 
-  runCommand(command) {
+  runCommandList(commands) {
+    this.setSnapshot(0);
+    this.networkSnapshots = [];
+    this.networkSnapshots.push(this.network.clone());
+    commands.forEach((c) => {
+      this.runCommand(c);
+    });
+  }
+
+  runNewSessionCommand() {
+    const split = this.newSessionCommand.split(",");
+    console.log(split);
+    const agentSplit = split[0].split("->");
+    const from = agentSplit[0].trim();
+    const to = agentSplit[1].trim();
+    const fact = split[1].trim();
+
+    console.log(new Fact(fact));
+
+    this.network.createMessage(from, to, new Fact(fact));
+  }
+
+  runCommand(command, step = true) {
     const openBrace = command.indexOf("(");
     const closeBrace = command.indexOf(")");
 
@@ -41,7 +65,9 @@ class Simulation {
     const cArg = command.slice(openBrace + 1, closeBrace);
 
     let matched = true;
-    this.network.step++;
+    if (step) {
+      this.network.step++;
+    }
 
     let res = false;
 
@@ -57,16 +83,21 @@ class Simulation {
         break;
       case "new_session":
         res = this.network.newSession();
+        this.runNewSessionCommand();
         break;
       default:
         matched = false;
     }
 
     if (!matched || !res) {
-      this.network.step--;
+      if (step) {
+        this.network.step--;
+      }
     } else {
-      this.networkSnapshots.push(this.network.clone());
-      this.currentSnapshot++;
+      if (step) {
+        this.networkSnapshots.push(this.network.clone());
+        this.currentSnapshot++;
+      }
     }
   }
 }

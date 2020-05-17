@@ -35,7 +35,8 @@ class Fact {
     return new Fact(
       this.data instanceof Fact ? this.data.clone() : this.data,
       this.encrypted,
-      this.decryptionKey
+      this.decryptionKey,
+      this.step
     );
   }
 

@@ -7,7 +7,7 @@ class Network {
   constructor() {
     this.agents = Map();
     this.stack = [];
-    this.session = 0;
+    this.session = -1;
     this.step = 0;
   }
 
@@ -46,7 +46,7 @@ class Network {
     // Parse inject command
 
     try {
-      const splitComm = commandStr.split(":");
+      const splitComm = commandStr.split(",");
       const agentSection = splitComm[0].trim();
       const factSection = splitComm[1].trim();
 
@@ -63,7 +63,8 @@ class Network {
   }
 
   newSession() {
-    session++;
+    this.session++;
+    return true;
   }
 
   receiveMessage(message) {
@@ -84,6 +85,8 @@ class Network {
     let cNetwork = new Network();
     this.agents.map((a) => a.clone()).forEach((a) => cNetwork.addAgent(a));
     cNetwork.stack = this.stack.map((m) => m.clone());
+    cNetwork.step = this.step;
+    cNetwork.session = this.session;
     return cNetwork;
   }
 }

@@ -10,7 +10,7 @@ class Message {
   }
 
   clone() {
-    return new Message(this.from, this.to, this.fact, this.status);
+    return new Message(this.from, this.to, this.fact, this.status, this.step);
   }
 
   toString() {
